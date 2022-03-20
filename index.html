@@ -19,9 +19,9 @@
                 <form class="pb-3 d-grid gap-2 border-bottom border-secondary border-2" id="city-search">
                     <div class="pb-1">
                         <label for="city-search-input" class="form-label h3">Search for a City:</label>
-                        <input type="text" class="form-control" id="city-search-input" placeholder="Chicago">
+                        <input type="text" class="form-control" id="city-search-input" name="city-search-input" placeholder="Chicago"></input>
                     </div>
-                    <button type="search" class="btn btn-primary" id="city-search-btn" name="name">Search</button>
+                    <button type="submit" class="btn btn-primary" id="city-search-btn">Search</button>
                 </form>
                 <!--container for search results-->
                 <ul id="search-history">
@@ -94,9 +94,6 @@
                     </div>
                 </div>
             </div>
-
-
-            <div></div>
         </section>
     </main>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>

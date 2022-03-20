@@ -1,3 +1,6 @@
+const searchedCityInput = document.getElementById('city-search-input');
+const searchForm = document.getElementById('city-search');
+
 var formHandler = function(citySearchInput) {
     var weatherstackAPI = "http://api.weatherstack.com/current?access_key=e5b5ce23f2d8c81d597e9188fe288956&query="+ citySearchInput +"&units=f";
 
@@ -14,7 +17,10 @@ var formHandler = function(citySearchInput) {
         })
 }
 
+$("#city-search").on("submit", function(event) {
 
-
-
+    event.preventDefault();
+    console.log(searchedCityInput.value);
+    formHandler(searchedCityInput.value);
     
+})
