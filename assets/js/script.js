@@ -2,6 +2,8 @@ var citySearchInputEl = document.querySelector("#city-search-input");
 var searchFormEl = document.querySelector('#city-search');
 var searchHistoryEl = document.querySelector('#search-history');
 var searchItemEl = document.querySelector('#search-item');
+var weatherAPIKey = "56d6dd58ac6b3583bfd6b3243e861145";
+var displayCityEl = document.querySelector('#wCity');
 
 var formSubmitHandler = function(event, citySearchInput) {
     
@@ -10,48 +12,12 @@ var formSubmitHandler = function(event, citySearchInput) {
     var citySearchInput = citySearchInputEl.value.trim();
 
     if (citySearchInput) {
-        getWeatherData(citySearchInput);
+        getGeoCode(citySearchInput);
         createHistory(citySearchInput);
     } else {
         console.log("Bad Search");
     } 
 };
-
-var getWeatherData = function (city) {
-    var cityLat="1"
-    var cityLong="1"
-    getGeoCode(city);
-    console.log(cityLat, cityLong)
-    var weatherAPI = "https://api.openweathermap.org/data/2.5/onecall?lat="+ cityLat +"&lon="+ cityLong +"&appid=56d6dd58ac6b3583bfd6b3243e86114";
-
-    fetch(weatherAPI)
-    .then(function(response) {
-        if (response.ok) {
-            console.log(response);
-            response.json().then(function(data) {
-                console.log(data);
-            });
-        } else {
-            console.log("Bad API Pull")
-        }
-    });
-};
-
-// var getForcastData = function (cityLat, cityLong) {
-//     var weatherAPI = "https://api.openweathermap.org/data/2.5/onecall?lat="+ cityLat +"&lon="+ cityLong +"&appid="+ weatherAPIKey;
-
-//     fetch(weatherAPI)
-//     .then(function(response) {
-//         if (response.ok) {
-//             console.log(response);
-//             response.json().then(function(data) {
-//                 console.log(data);
-//             });
-//         } else {
-//             console.log("Bad API Pull")
-//         }
-//     });
-// };
 
 var createHistory = function (city) {
     $("#search-history").prepend("<button type='button' class='list-group-item' id="+city+">"+city+"</button>");
@@ -62,8 +28,58 @@ var reSubmit = function(event) {
     formSubmitHandler(event, JSON.stringify(event.target.getAttribute("id")))
 }
 
+var getWeather = function(latC, longC) {
+    var latC = JSON.parse(localStorage.getItem("cityLat"));
+    var longC = JSON.parse(localStorage.getItem("cityLong"));
+    var weatherAPI = "https://api.openweathermap.org/data/2.5/onecall?lat="+ latC +"&lon="+ longC +"&units=imperial&appid="+ weatherAPIKey;
+    fetch (weatherAPI)
+        .then(function(response) {
+            if (response.ok) {
+                console.log(response)
+                response.json().then(function(data) {
+                    console.log(data);
+                    $("#wTemp").text("Temp: "+ data.current.temp +"F");
+                    $("#wWind").text("Wind: "+ data.current.wind_speed +" MPH" );
+                    $("#wHumidity").text("Humidity: "+ data.current.humidity);
+                    $("#wUV").text("UV Index: "+ data.current.uvi);
+                    for (i=0; i>5; i++) {
+                        var forcastCardEl = document.createElement("div").appendTo("#forcast-display");
+                        forcastCardEl.classList = "col card bg-secondary text-white";
+                        forcastCardEl.setAttribute("id", "#card"+i)
+                        $("#forcast-display").append(forcastCardEl)
+
+                        var forcastDateEl = document.createElement("span")
+                        forcastDateEl.text("DD/MM/YYYY")
+
+                        var forcastIconEl = document.createElement("i");
+                        forcastIconEl.classList = "bi bi-cloud-lightning-rain";
+
+                        var forcastTempEl = document.createElement("p");
+                        forcastTempEl.innerText("Temp: "+ data.daily[i].temp.day +"F");
+
+                        var forcastWindEl = document.createElement("p")
+                        forcastWindEl.innerText("Wind: "+ data.daily[i].wind +"MPH");
+
+                        var forcastHumidityEl = document.createElement("p");
+                        forcastHumidityEl.innerText("Humidity: "+ data.daily[i].humidity);
+
+                        var forcastUVIEl = document.createElement("p");
+                        forcastUVIEl.innerText("UV Index: "+ data.daily[i].uvi);
+
+                        $("#card"+i).append(forcastDateEl, forcastIconEl, forcastTempEl, forcastWindEl, forcastHumidityEl, forcastUVIEl);
+
+                        
+                        
+                    }
+                });
+            };
+        });
+};
+
+
+
 var getGeoCode = function(city) {
-    var cityLat=""
+    $("#wCity").text(city);
     var geoAPI = "https://api.myptv.com/geocoding/v1/locations/by-text?searchText="+ city;
     fetch(geoAPI, {
         method: "GET",
@@ -71,23 +87,19 @@ var getGeoCode = function(city) {
     })
     .then(function(response) {
         if (response.ok) {
-            console.log(response);
             response.json().then(function(data) {
             var cityLat=data.locations[0].referencePosition.latitude;
                 cityLat=JSON.stringify(cityLat.toFixed(2));
+                localStorage.setItem("cityLat", cityLat);
             var cityLong=data.locations[0].referencePosition.longitude;
                 cityLong=JSON.stringify(cityLong.toFixed(2));
-
-            console.log(cityLat, cityLong)
-            
-            return cityLat, cityLong;
+                localStorage.setItem("cityLong", cityLong);
             });
-        } else {
-            console.log("Bad API Pull")
-        }
-    });
-};
 
+        };
+    }).then(getWeather());
+    
+};
 searchFormEl.addEventListener("submit", formSubmitHandler);
 
 searchHistoryEl.addEventListener("click", reSubmit);
